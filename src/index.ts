@@ -1,13 +1,12 @@
-import express from "express";
+import { app } from "./app";
+import { config } from "./config/config";
+import { logger } from "./logging/logger";
 
-export const app = express();
-
-app.get("/health", (_req, res) => {
-  res.json({ status: "ok" });
-});
-
-if (process.env.NODE_ENV !== "test") {
-  app.listen(3000, () => {
-    console.log("Server running on port 3000");
+app.listen(config.port, () => {
+  logger.info("Server started", {
+    event: {
+      event: "server.started",
+      entity: "server",
+    },
   });
-}
+});
