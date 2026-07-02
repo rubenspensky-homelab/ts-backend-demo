@@ -18,7 +18,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 26
+          node-version: 22
           cache: npm
 
       - name: Install dependencies
@@ -38,7 +38,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 26
+          node-version: 22
           cache: npm
 
       - name: Install dependencies
@@ -88,3 +88,22 @@ jobs:
         run: |
           docker push ghcr.io/${{ github.repository_owner }}/ts-backend-demo:latest
           docker push ghcr.io/${{ github.repository_owner }}/ts-backend-demo:${{ github.sha }}
+
+  update-gitops:
+    needs: docker
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update GitOps repo
+        env:
+          GITOPS_TOKEN: ${{ secrets.GITOPS_TOKEN }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          git clone https://x-access-token:${GITOPS_TOKEN}@github.com/rubenspensky-homelab/homelab-apps.git
+          cd homelab-apps
+          sed -i "s|image: .*|image: ghcr.io/rubenspensky-homelab/ts-backend-demo:${IMAGE_TAG}|" \
+          infrastructure/ts-backend-demo/deployment.yaml
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add apps/ts-backend-demo/values.yaml
+          git commit -m "chore: update ts-backend-demo image to ${IMAGE_TAG}"
+          git push
