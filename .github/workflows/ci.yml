@@ -104,6 +104,6 @@ jobs:
           infrastructure/ts-backend-demo/deployment.yaml
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add apps/ts-backend-demo/values.yaml
+          git add infrastructure/ts-backend-demo/deployment.yaml
           git commit -m "chore: update ts-backend-demo image to ${IMAGE_TAG}"
           git push
