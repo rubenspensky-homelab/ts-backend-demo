@@ -95,7 +95,7 @@ jobs:
     steps:
       - name: Update GitOps repo
         env:
-          GITOPS_TOKEN: ${{ secrets.GITOPS_TOKEN }}
+          GITOPS_TOKEN: ${{ secrets.HOMELAB_APPS_PAT }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
           git clone https://x-access-token:${GITOPS_TOKEN}@github.com/rubenspensky-homelab/homelab-apps.git
