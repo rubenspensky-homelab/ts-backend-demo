@@ -57,3 +57,19 @@ scrape_configs:
 Tracing is initialized before the Express application is loaded so OpenTelemetry automatic instrumentation can capture HTTP and Express spans.
 
 Traces are exported only through OTLP over HTTP. Configure the OTLP destination with environment variables; the application does not contain backend-specific tracing configuration.
+
+The trace endpoint must be an OTLP HTTP traces endpoint, including the `/v1/traces` path:
+
+```env
+OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://localhost:4318/v1/traces
+```
+
+Do not point `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT` at an OTLP gRPC endpoint. If the app logs an error like `Parse Error: Expected HTTP/`, the endpoint is reachable but is likely speaking a non-HTTP protocol. Use the OTLP HTTP receiver address instead.
+
+For local development without an OTLP HTTP receiver, disable tracing:
+
+```env
+TRACING_ENABLED=false
+```
+
+To validate tracing export, keep tracing enabled, start the app, call an endpoint such as `GET /health`, and check the logs. The app logs when OpenTelemetry tracing is registered and also logs OpenTelemetry diagnostic export errors if spans cannot be sent.
