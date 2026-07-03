@@ -4,6 +4,8 @@ export type AppConfig = {
   version: string;
   environment: string;
   metricsEnabled: boolean;
+  tracingEnabled: boolean;
+  otlpTracesEndpoint: string;
 };
 
 export type ConfigSource = {

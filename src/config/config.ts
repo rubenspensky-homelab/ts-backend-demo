@@ -5,6 +5,7 @@ const DEFAULT_PORT = 3000;
 const DEFAULT_SERVICE_NAME = "act-backend-demo";
 const DEFAULT_VERSION = "1.0.0";
 const DEFAULT_ENVIRONMENT = "development";
+const DEFAULT_OTLP_TRACES_ENDPOINT = "http://localhost:4318/v1/traces";
 
 export class ConfigError extends Error {
   constructor(message: string) {
@@ -20,6 +21,8 @@ export function loadConfig(source: ConfigSource): AppConfig {
     version: readString(source, "npm_package_version", DEFAULT_VERSION),
     environment: readString(source, "NODE_ENV", DEFAULT_ENVIRONMENT),
     metricsEnabled: readBoolean(source, "METRICS_ENABLED", true),
+    tracingEnabled: readBoolean(source, "TRACING_ENABLED", true),
+    otlpTracesEndpoint: readString(source, "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT", DEFAULT_OTLP_TRACES_ENDPOINT),
   };
 }
 

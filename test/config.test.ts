@@ -19,6 +19,8 @@ describe("loadConfig", () => {
       version: "1.0.0",
       environment: "development",
       metricsEnabled: true,
+      tracingEnabled: true,
+      otlpTracesEndpoint: "http://localhost:4318/v1/traces",
     });
   });
 
@@ -31,6 +33,8 @@ describe("loadConfig", () => {
           npm_package_version: "2.3.4",
           NODE_ENV: "production",
           METRICS_ENABLED: "false",
+          TRACING_ENABLED: "false",
+          OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: "http://localhost:4318/custom/traces",
         }),
       ),
     ).toEqual({
@@ -39,6 +43,8 @@ describe("loadConfig", () => {
       version: "2.3.4",
       environment: "production",
       metricsEnabled: false,
+      tracingEnabled: false,
+      otlpTracesEndpoint: "http://localhost:4318/custom/traces",
     });
   });
 
