@@ -18,6 +18,7 @@ describe("loadConfig", () => {
       serviceName: "act-backend-demo",
       version: "1.0.0",
       environment: "development",
+      metricsEnabled: true,
     });
   });
 
@@ -29,6 +30,7 @@ describe("loadConfig", () => {
           SERVICE_NAME: "users-api",
           npm_package_version: "2.3.4",
           NODE_ENV: "production",
+          METRICS_ENABLED: "false",
         }),
       ),
     ).toEqual({
@@ -36,7 +38,14 @@ describe("loadConfig", () => {
       serviceName: "users-api",
       version: "2.3.4",
       environment: "production",
+      metricsEnabled: false,
     });
+  });
+
+  it("enables metrics unless explicitly disabled", () => {
+    expect(loadConfig(source({ METRICS_ENABLED: "true" })).metricsEnabled).toBe(true);
+    expect(loadConfig(source({ METRICS_ENABLED: "" })).metricsEnabled).toBe(true);
+    expect(loadConfig(source({ METRICS_ENABLED: "FALSE" })).metricsEnabled).toBe(false);
   });
 
   it("rejects invalid ports", () => {

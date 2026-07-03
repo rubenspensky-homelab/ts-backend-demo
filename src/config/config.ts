@@ -19,6 +19,7 @@ export function loadConfig(source: ConfigSource): AppConfig {
     serviceName: readString(source, "SERVICE_NAME", DEFAULT_SERVICE_NAME),
     version: readString(source, "npm_package_version", DEFAULT_VERSION),
     environment: readString(source, "NODE_ENV", DEFAULT_ENVIRONMENT),
+    metricsEnabled: readBoolean(source, "METRICS_ENABLED", true),
   };
 }
 
@@ -41,6 +42,16 @@ function readPort(source: ConfigSource): number {
   }
 
   return port;
+}
+
+function readBoolean(source: ConfigSource, key: string, fallback: boolean): boolean {
+  const value = source.get(key);
+
+  if (!value || value.trim() === "") {
+    return fallback;
+  }
+
+  return value.trim().toLowerCase() !== "false";
 }
 
 export const config = loadConfig(new EnvConfigSource());

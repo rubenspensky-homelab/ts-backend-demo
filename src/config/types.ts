@@ -3,6 +3,7 @@ export type AppConfig = {
   serviceName: string;
   version: string;
   environment: string;
+  metricsEnabled: boolean;
 };
 
 export type ConfigSource = {

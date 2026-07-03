@@ -1,7 +1,10 @@
 import express from "express";
 import type { NextFunction, Request, Response } from "express";
 import { randomUUID } from "node:crypto";
+import { config } from "./config/config";
 import { logger } from "./logging/logger";
+import { createHttpMetricsMiddleware } from "./observability/metrics/http-metrics.middleware";
+import { httpMetrics, metricsRegistry } from "./observability/metrics/metrics.registry";
 
 declare global {
   namespace Express {
@@ -14,6 +17,10 @@ declare global {
 export const app = express();
 
 app.use(express.json());
+
+if (config.metricsEnabled) {
+  app.use(createHttpMetricsMiddleware(httpMetrics));
+}
 
 app.use((req, res, next) => {
   const startedAt = process.hrtime.bigint();
@@ -43,6 +50,13 @@ app.use((req, res, next) => {
 app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
 });
+
+if (config.metricsEnabled) {
+  app.get("/metrics", async (_req, res) => {
+    res.setHeader("Content-Type", metricsRegistry.contentType());
+    res.send(await metricsRegistry.getMetrics());
+  });
+}
 
 app.get("/demo/users/:id", (req, res) => {
   const user = { id: req.params.id, name: "Demo User" };
