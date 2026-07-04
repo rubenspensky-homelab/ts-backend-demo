@@ -73,7 +73,7 @@ jobs:
         with:
           scan-type: fs
           scan-ref: .
-          scanners: vuln,config,secret
+          scanners: vuln,misconfig,secret
           severity: MEDIUM,HIGH,CRITICAL
           ignore-unfixed: true
           format: table
