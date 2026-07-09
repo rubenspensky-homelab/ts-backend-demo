@@ -19,7 +19,9 @@
     "@opentelemetry/instrumentation-http": "^0.220.0",
     "@opentelemetry/resources": "^2.9.0",
     "@opentelemetry/sdk-node": "^0.220.0",
+    "@scalar/express-api-reference": "^0.10.9",
     "express": "^5.2.1",
+    "jose": "^6.2.3",
     "prom-client": "^15.1.3"
   },
   "devDependencies": {

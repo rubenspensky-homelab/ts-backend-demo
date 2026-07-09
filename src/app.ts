@@ -1,7 +1,12 @@
 import express from "express";
 import type { NextFunction, Request, Response } from "express";
 import { randomUUID } from "node:crypto";
+import { createAuthenticationProvider } from "./auth/factory/authentication-provider.factory";
+import { createRequireAuth } from "./auth/middleware/require-auth.middleware";
 import { config } from "./config/config";
+import { createDocsOAuthAuthorizeRedirectHandler } from "./docs/oauth-redirect";
+import { createOpenApiDocument } from "./docs/openapi";
+import { createScalarDocsHandler } from "./docs/scalar";
 import { logger } from "./logging/logger";
 import { createHttpMetricsMiddleware } from "./observability/metrics/http-metrics.middleware";
 import { httpMetrics, metricsRegistry } from "./observability/metrics/metrics.registry";
@@ -15,6 +20,11 @@ declare global {
 }
 
 export const app = express();
+const authenticationProvider = createAuthenticationProvider(config.auth);
+const requireAuth = createRequireAuth(authenticationProvider);
+const openApiDocument = createOpenApiDocument(config);
+const docsOAuthAuthorizeRedirectHandler = createDocsOAuthAuthorizeRedirectHandler(config.docs);
+const scalarDocsHandler = createScalarDocsHandler(config, openApiDocument);
 
 app.use(express.json());
 
@@ -51,12 +61,39 @@ app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
 });
 
+app.get("/openapi.json", (_req, res) => {
+  res.json(openApiDocument);
+});
+
+app.get("/docs/oauth/authorize", docsOAuthAuthorizeRedirectHandler);
+
+app.get("/docs", scalarDocsHandler);
+
 if (config.metricsEnabled) {
   app.get("/metrics", async (_req, res) => {
     res.setHeader("Content-Type", metricsRegistry.contentType());
     res.send(await metricsRegistry.getMetrics());
   });
 }
+
+app.get("/me", requireAuth, (req, res) => {
+  if (!req.user) {
+    throw new Error("Authenticated user missing after requireAuth middleware");
+  }
+
+  res.json(req.user);
+});
+
+app.get("/auth/test", requireAuth, (req, res) => {
+  if (!req.user) {
+    throw new Error("Authenticated user missing after requireAuth middleware");
+  }
+
+  res.json({
+    authenticated: true,
+    user: req.user,
+  });
+});
 
 app.get("/demo/users/:id", (req, res) => {
   const user = { id: req.params.id, name: "Demo User" };

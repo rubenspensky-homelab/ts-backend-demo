@@ -47,6 +47,24 @@ describe("GET /health", () => {
   });
 });
 
+describe("GET /me", () => {
+  it("requires authentication", async () => {
+    const res = await request(app).get("/me");
+
+    expect(res.status).toBe(401);
+    expect(res.body).toEqual({ error: "Unauthorized", message: "Missing bearer token" });
+  });
+});
+
+describe("GET /auth/test", () => {
+  it("requires authentication", async () => {
+    const res = await request(app).get("/auth/test");
+
+    expect(res.status).toBe(401);
+    expect(res.body).toEqual({ error: "Unauthorized", message: "Missing bearer token" });
+  });
+});
+
 describe("demo logging routes", () => {
   it("logs a domain event for the demo user route", async () => {
     const res = await request(app).get("/demo/users/123").set("x-request-id", "event-request-id");
