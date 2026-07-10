@@ -1,11 +1,11 @@
-import { config } from "./config/config";
-import { logger } from "./logging/logger";
-import { shutdownTracing, startTracing } from "./observability/tracing/tracing";
+import { config } from "./shared/config/service-config";
+import { logger } from "./shared/observability/logging/logger";
+import { shutdownTracing, startTracing } from "./shared/observability/tracing/tracing";
 
 async function main(): Promise<void> {
   startTracing();
 
-  const { app } = await import("./app.js");
+  const { app } = await import("./main.js");
   const server = app.listen(config.port, () => {
     logger.info("Server started", {
       event: {

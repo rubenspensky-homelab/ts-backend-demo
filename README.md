@@ -1,75 +1,198 @@
-# TypeScript Backend Demo
+# Base Microservice Template
 
-Small TypeScript Node.js backend using Express.
+Production-oriented TypeScript backend template for future microservices.
 
-## Scripts
+It keeps the current Express, Scalar, OpenTelemetry, Prometheus, and JOSE stack, but reorganizes the codebase around Hexagonal Architecture and Clean Architecture principles.
 
-- `npm run build` compiles TypeScript.
-- `npm test` runs the Vitest test suite.
-- `npm start` starts the compiled app from `dist/index.js`.
+## Why this exists
 
-## Configuration
+Use this repository as the starting point for new backend services when you want:
 
-Environment variables:
+- a reusable technical foundation
+- thin HTTP controllers
+- application use cases behind ports
+- infrastructure isolated from business logic
+- shared auth, config, logging, tracing, metrics, and docs setup
 
-- `PORT`: HTTP port. Defaults to `3000`.
-- `SERVICE_NAME`: Service name used in logs. Defaults to `act-backend-demo`.
-- `NODE_ENV`: Runtime environment. Defaults to `development`.
-- `METRICS_ENABLED`: Enables the `/metrics` endpoint unless explicitly set to `false`.
-- `TRACING_ENABLED`: Enables OpenTelemetry tracing unless explicitly set to `false`.
-- `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`: OTLP HTTP traces endpoint. Defaults to `http://localhost:4318/v1/traces`.
-- `OTEL_EXPORTER_OTLP_HEADERS`: Optional OTLP headers, formatted as comma-separated `key=value` pairs.
-- `OTEL_EXPORTER_OTLP_TRACES_HEADERS`: Optional trace-specific OTLP headers, formatted as comma-separated `key=value` pairs.
+## Architecture overview
 
-## Health Check
+### Layers
 
-`GET /health` returns:
+- `domain/`: business entities and pure domain concepts
+- `application/`: use cases, DTOs, mappers, and ports
+- `infrastructure/`: HTTP adapters and persistence implementations
+- `shared/`: reusable technical infrastructure only
+- `bootstrap/`: composition root and dependency wiring
 
-```json
-{ "status": "ok" }
+### Dependency direction
+
+- `domain` depends on nothing external
+- `application` depends on domain and ports
+- `infrastructure` implements ports
+- `bootstrap` wires concrete dependencies
+- `shared` contains reusable cross-cutting technical concerns
+
+## Folder structure
+
+```text
+src/
+├── application/
+│   ├── dto/
+│   ├── mappers/
+│   ├── ports/
+│   └── use-cases/
+├── bootstrap/
+│   ├── container/
+│   └── server/
+├── domain/
+│   └── entities/
+├── infrastructure/
+│   ├── http/
+│   │   ├── controllers/
+│   │   ├── middleware/
+│   │   └── routes/
+│   └── persistence/
+│       └── repositories/
+├── shared/
+│   ├── auth/
+│   ├── config/
+│   ├── http/
+│   ├── observability/
+│   └── types/
+├── app.ts
+├── index.ts
+└── main.ts
 ```
 
-## Metrics
+## Endpoints
 
-`GET /metrics` exposes Prometheus-compatible metrics when `METRICS_ENABLED` is not `false`.
+- `GET /` landing page for browsers, with links to docs and health
+- `GET /` with `Accept: application/json` returns service metadata
+- `GET /health` health check
+- `GET /docs` Scalar API docs
+- `GET /openapi.json` OpenAPI document
+- `GET /metrics` Prometheus metrics when enabled
+- `GET /me` authenticated user
+- `GET /auth/test` auth verification
+- `GET /demo/users/:id` demo use case
+- `GET /demo/error` demo error handling
 
-The endpoint returns Prometheus text format with the correct `Content-Type` for scraping.
+## Installation
 
-Included metrics:
-
-- Default Node.js and process metrics from `prom-client`.
-- `http_requests_total` with `method`, `route`, and `status_code` labels.
-- `http_request_duration_seconds` histogram with `method`, `route`, and `status_code` labels.
-
-Route labels use Express route patterns when available, such as `/demo/users/:id`, and do not use raw URLs.
-
-Example Prometheus scrape config:
-
-```yaml
-scrape_configs:
-  - job_name: act-backend-demo
-    static_configs:
-      - targets: ["localhost:3000"]
+```sh
+npm ci
 ```
 
-## Tracing
+## Development
 
-Tracing is initialized before the Express application is loaded so OpenTelemetry automatic instrumentation can capture HTTP and Express spans.
+Build:
 
-Traces are exported only through OTLP over HTTP. Configure the OTLP destination with environment variables; the application does not contain backend-specific tracing configuration.
-
-The trace endpoint must be an OTLP HTTP traces endpoint, including the `/v1/traces` path:
-
-```env
-OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://localhost:4318/v1/traces
+```sh
+npm run build
 ```
 
-Do not point `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT` at an OTLP gRPC endpoint. If the app logs an error like `Parse Error: Expected HTTP/`, the endpoint is reachable but is likely speaking a non-HTTP protocol. Use the OTLP HTTP receiver address instead.
+Start compiled app:
 
-For local development without an OTLP HTTP receiver, disable tracing:
-
-```env
-TRACING_ENABLED=false
+```sh
+npm start
 ```
 
-To validate tracing export, keep tracing enabled, start the app, call an endpoint such as `GET /health`, and check the logs. The app logs when OpenTelemetry tracing is registered and also logs OpenTelemetry diagnostic export errors if spans cannot be sent.
+Run tests:
+
+```sh
+npm test
+```
+
+## Environment variables
+
+### Core
+
+- `PORT` default `3000`
+- `SERVICE_NAME` default `base-microservice`
+- `SERVICE_DESCRIPTION` default `Base microservice template for future backend services.`
+- `NODE_ENV` default `development`
+
+### Observability
+
+- `METRICS_ENABLED` default enabled unless set to `false`
+- `TRACING_ENABLED` default enabled unless set to `false`
+- `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT` default `http://localhost:4318/v1/traces`
+
+### Authentication
+
+- `AUTH_PROVIDER` `oidc` or `mock`, default `oidc`
+- `AUTH_ISSUER`
+- `AUTH_JWKS_URL`
+- `AUTH_AUDIENCE`
+- `MOCK_USER_ID`
+- `MOCK_USER_EMAIL`
+- `MOCK_USER_NAME`
+- `MOCK_USER_GROUPS`
+
+### Docs / OAuth
+
+- `DOCS_OAUTH_CLIENT_ID`
+- `DOCS_OAUTH_AUTHORIZATION_URL`
+- `DOCS_OAUTH_UPSTREAM_AUTHORIZATION_URL`
+- `DOCS_OAUTH_TOKEN_URL`
+- `DOCS_OAUTH_REDIRECT_URI`
+
+## Documentation and health URLs
+
+- Landing page: `http://localhost:3000/`
+- Docs: `http://localhost:3000/docs`
+- OpenAPI: `http://localhost:3000/openapi.json`
+- Health: `http://localhost:3000/health`
+
+## What belongs in `shared`
+
+Reusable technical infrastructure only:
+
+- authentication middleware
+- authentication providers and token validation
+- request context and correlation IDs
+- logging
+- tracing
+- metrics
+- config loading and validation
+- OpenAPI and Scalar setup
+- Express type augmentation
+
+## What should remain service-specific
+
+- entities
+- business rules
+- use cases
+- DTOs tied to business flows
+- controllers for service endpoints
+- repository implementations for service data
+- authorization rules beyond authentication
+- service-specific integrations
+
+## How to create a new microservice from this template
+
+1. Keep `shared/` and `bootstrap/` as the technical foundation.
+2. Replace the demo domain, use case, controller, and repository.
+3. Add new ports in `application/ports`.
+4. Implement adapters in `infrastructure/`.
+5. Wire dependencies in `bootstrap/container`.
+6. Update OpenAPI docs and README.
+
+## Testing
+
+The repository includes tests for:
+
+- landing page and root JSON response
+- health endpoint
+- auth behavior
+- docs exposure
+- metrics exposure
+- config validation
+- one representative use case
+- error handling
+- dependency injection wiring
+
+## Notes
+
+- No lint script is currently configured in `package.json`.
+- `src/index.ts` remains the process entrypoint so tracing starts before the Express app is imported.

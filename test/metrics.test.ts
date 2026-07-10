@@ -1,12 +1,10 @@
 import request from "supertest";
 import { beforeEach, describe, expect, it } from "vitest";
 import { app } from "../src/app";
-import { setLoggerTransport } from "../src/logging/logger";
+import { setLoggerTransport } from "../src/shared/observability/logging/logger";
 
 beforeEach(() => {
-  setLoggerTransport({
-    write() {},
-  });
+  setLoggerTransport({ write() {} });
 });
 
 describe("GET /metrics", () => {

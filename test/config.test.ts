@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { AuthConfigError } from "../src/auth/config/auth.config";
-import { ConfigError, loadConfig } from "../src/config/config";
-import { CompositeConfigSource } from "../src/config/sources";
-import type { ConfigSource } from "../src/config/types";
+import { CompositeConfigSource } from "../src/shared/config/env/config-source";
+import { loadConfig } from "../src/shared/config/service-config";
+import type { ConfigSource } from "../src/shared/config/types";
+import { AuthConfigError, ConfigError } from "../src/shared/config/validation/config.errors";
 
 function source(values: Record<string, string | undefined>): ConfigSource {
   return {
@@ -16,7 +16,8 @@ describe("loadConfig", () => {
   it("uses safe defaults", () => {
     expect(loadConfig(source({}))).toEqual({
       port: 3000,
-      serviceName: "act-backend-demo",
+      serviceName: "base-microservice",
+      serviceDescription: "Base microservice template for future backend services.",
       version: "1.0.0",
       environment: "development",
       metricsEnabled: true,
@@ -44,6 +45,7 @@ describe("loadConfig", () => {
         source({
           PORT: "8080",
           SERVICE_NAME: "users-api",
+          SERVICE_DESCRIPTION: "Users service",
           npm_package_version: "2.3.4",
           NODE_ENV: "production",
           METRICS_ENABLED: "false",
@@ -63,6 +65,7 @@ describe("loadConfig", () => {
     ).toEqual({
       port: 8080,
       serviceName: "users-api",
+      serviceDescription: "Users service",
       version: "2.3.4",
       environment: "production",
       metricsEnabled: false,
@@ -120,6 +123,7 @@ describe("loadConfig", () => {
           MOCK_USER_ID: "dev-user-1",
           MOCK_USER_EMAIL: "dev@example.com",
           MOCK_USER_NAME: "Dev User",
+          MOCK_USER_GROUPS: "admins,developers",
         }),
       ),
     ).toThrow("AUTH_PROVIDER=mock is not allowed when NODE_ENV=production");
