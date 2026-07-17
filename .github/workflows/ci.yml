@@ -8,7 +8,7 @@ permissions:
   packages: write
 
 jobs:
-  test:
+  quality:
     runs-on: arc-runner-set
 
     steps:
@@ -24,11 +24,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run tests
-        run: npm test
+      - name: Run project checks
+        run: npm run check
 
   build:
-    needs: test
+    needs: quality
     runs-on: arc-runner-set
 
     steps:
@@ -103,14 +103,18 @@ jobs:
           driver: remote
           endpoint: tcp://buildkit.buildkit.svc.cluster.local:1234
 
+      - name: Compute image metadata
+        id: image
+        run: echo "name=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+
       - name: Build and push image
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/ts-backend-demo:latest
-            ghcr.io/${{ github.repository_owner }}/ts-backend-demo:${{ github.sha }}
+            ${{ steps.image.outputs.name }}:latest
+            ${{ steps.image.outputs.name }}:${{ github.sha }}
 
   security-image-scan:
     needs: docker
@@ -124,10 +128,14 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Compute image metadata
+        id: image
+        run: echo "name=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+
       - name: Scan Docker image with Trivy
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ghcr.io/${{ github.repository_owner }}/ts-backend-demo:${{ github.sha }}
+          image-ref: ${{ steps.image.outputs.name }}:${{ github.sha }}
           scanners: vuln,secret
           severity: MEDIUM,HIGH,CRITICAL
           ignore-unfixed: true
@@ -143,12 +151,14 @@ jobs:
           GITOPS_TOKEN: ${{ secrets.HOMELAB_APPS_PAT }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
+          SERVICE_NAME="${GITHUB_REPOSITORY#*/}"
+          IMAGE_NAME="ghcr.io/${GITHUB_REPOSITORY,,}"
           git clone https://x-access-token:${GITOPS_TOKEN}@github.com/rubenspensky-homelab/homelab-apps.git
           cd homelab-apps
-          sed -i "s|image: .*|image: ghcr.io/rubenspensky-homelab/ts-backend-demo:${IMAGE_TAG}|" \
-          infrastructure/ts-backend-demo/deployment.yaml
+          sed -i "s|image: .*|image: ${IMAGE_NAME}:${IMAGE_TAG}|" \
+          "infrastructure/${SERVICE_NAME}/deployment.yaml"
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add infrastructure/ts-backend-demo/deployment.yaml
-          git commit -m "chore: update ts-backend-demo image to ${IMAGE_TAG}"
+          git add "infrastructure/${SERVICE_NAME}/deployment.yaml"
+          git commit -m "chore: update ${SERVICE_NAME} image to ${IMAGE_TAG}"
           git push

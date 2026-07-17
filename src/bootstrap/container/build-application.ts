@@ -3,7 +3,6 @@ import { createAuthenticationProvider } from "../../shared/auth/authentication-p
 import { config } from "../../shared/config/service-config";
 import type { AppConfig } from "../../shared/config/types";
 import { createDocsOAuthAuthorizeRedirectHandler } from "../../shared/http/oauth-redirect";
-import { createOpenApiDocument } from "../../shared/http/openapi";
 import { createScalarDocsHandler } from "../../shared/http/scalar";
 import { logger } from "../../shared/observability/logging/logger";
 import type { Logger } from "../../shared/observability/logging/types";
@@ -16,6 +15,7 @@ import { SystemController } from "../../infrastructure/http/controllers/system.c
 import { AuthController } from "../../infrastructure/http/controllers/auth.controller";
 import { DemoController } from "../../infrastructure/http/controllers/demo.controller";
 import { DocsController } from "../../infrastructure/http/controllers/docs.controller";
+import { createOpenApiDocument } from "../../infrastructure/http/openapi/service-openapi";
 import { createHttpApp } from "../server/create-http-app";
 
 export type ApplicationDependencies = {

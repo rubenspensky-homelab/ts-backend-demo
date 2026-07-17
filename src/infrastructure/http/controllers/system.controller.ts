@@ -103,4 +103,13 @@ export class SystemController {
       timestamp: new Date().toISOString(),
     };
   }
+
+  getReadiness() {
+    return {
+      status: "ready" as const,
+      service: this.config.serviceName,
+      checks: {},
+      timestamp: new Date().toISOString(),
+    };
+  }
 }

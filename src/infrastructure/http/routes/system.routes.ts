@@ -17,5 +17,9 @@ export function createSystemRoutes(controller: SystemController): Router {
     res.json(controller.getHealth());
   });
 
+  router.get("/ready", (_req, res) => {
+    res.json(controller.getReadiness());
+  });
+
   return router;
 }

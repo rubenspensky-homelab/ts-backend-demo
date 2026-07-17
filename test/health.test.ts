@@ -50,3 +50,17 @@ describe("GET /health", () => {
     expect(logs[0]?.http?.durationMs).toEqual(expect.any(Number));
   });
 });
+
+describe("GET /ready", () => {
+  it("returns service readiness details", async () => {
+    const res = await request(app).get("/ready");
+
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({
+      status: "ready",
+      service: "base-microservice",
+      checks: {},
+    });
+    expect(res.body.timestamp).toEqual(expect.any(String));
+  });
+});

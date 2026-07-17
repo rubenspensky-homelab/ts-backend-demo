@@ -1,4 +1,12 @@
-import type { AppConfig } from "../config/types";
+import type { DocsConfig } from "../config/types";
+
+export type BaseOpenApiConfig = {
+  port: number;
+  serviceName: string;
+  serviceDescription: string;
+  version: string;
+  docs: DocsConfig;
+};
 
 export type OpenApiDocument = {
   openapi: "3.1.0";
@@ -23,7 +31,7 @@ export type OpenApiDocument = {
   };
 };
 
-export function createOpenApiDocument(config: AppConfig): OpenApiDocument {
+export function createBaseOpenApiDocument(config: BaseOpenApiConfig): OpenApiDocument {
   return {
     openapi: "3.1.0",
     info: {
@@ -40,7 +48,6 @@ export function createOpenApiDocument(config: AppConfig): OpenApiDocument {
     tags: [
       { name: "System", description: "Health and operational endpoints" },
       { name: "Authentication", description: "Protected authentication test endpoints" },
-      { name: "Demo", description: "Demo application endpoints" },
     ],
     paths: {
       "/": {
@@ -71,6 +78,23 @@ export function createOpenApiDocument(config: AppConfig): OpenApiDocument {
               content: {
                 "application/json": {
                   schema: { $ref: "#/components/schemas/HealthResponse" },
+                },
+              },
+            },
+          },
+        },
+      },
+      "/ready": {
+        get: {
+          tags: ["System"],
+          summary: "Readiness check",
+          operationId: "getReadiness",
+          responses: {
+            "200": {
+              description: "Service is ready to receive traffic",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ReadinessResponse" },
                 },
               },
             },
@@ -112,48 +136,6 @@ export function createOpenApiDocument(config: AppConfig): OpenApiDocument {
               },
             },
             "401": { $ref: "#/components/responses/Unauthorized" },
-          },
-        },
-      },
-      "/demo/users/{id}": {
-        get: {
-          tags: ["Demo"],
-          summary: "Get a demo user",
-          operationId: "getDemoUser",
-          parameters: [
-            {
-              name: "id",
-              in: "path",
-              required: true,
-              schema: { type: "string" },
-            },
-          ],
-          responses: {
-            "200": {
-              description: "Demo user",
-              content: {
-                "application/json": {
-                  schema: { $ref: "#/components/schemas/DemoUserResponse" },
-                },
-              },
-            },
-          },
-        },
-      },
-      "/demo/error": {
-        get: {
-          tags: ["Demo"],
-          summary: "Trigger a demo error",
-          operationId: "getDemoError",
-          responses: {
-            "500": {
-              description: "Demo error response",
-              content: {
-                "application/json": {
-                  schema: { $ref: "#/components/schemas/ErrorResponse" },
-                },
-              },
-            },
           },
         },
       },
@@ -214,6 +196,19 @@ export function createOpenApiDocument(config: AppConfig): OpenApiDocument {
             timestamp: { type: "string", format: "date-time" },
           },
         },
+        ReadinessResponse: {
+          type: "object",
+          required: ["status", "service", "checks", "timestamp"],
+          properties: {
+            status: { type: "string", const: "ready" },
+            service: { type: "string" },
+            checks: {
+              type: "object",
+              additionalProperties: true,
+            },
+            timestamp: { type: "string", format: "date-time" },
+          },
+        },
         AuthenticatedUser: {
           type: "object",
           required: ["id", "email", "name", "groups"],
@@ -233,20 +228,6 @@ export function createOpenApiDocument(config: AppConfig): OpenApiDocument {
           properties: {
             authenticated: { type: "boolean", const: true },
             user: { $ref: "#/components/schemas/AuthenticatedUser" },
-          },
-        },
-        DemoUserResponse: {
-          type: "object",
-          required: ["user"],
-          properties: {
-            user: {
-              type: "object",
-              required: ["id", "name"],
-              properties: {
-                id: { type: "string" },
-                name: { type: "string" },
-              },
-            },
           },
         },
         ErrorResponse: {

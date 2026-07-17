@@ -63,6 +63,10 @@ export const logger = new JsonLogger({
   environment: config.environment,
 });
 
+export function createLogger(options: LoggerOptions): JsonLogger {
+  return new JsonLogger(options);
+}
+
 export function setLoggerTransport(transport: LogTransport): void {
   logger.setTransport(transport);
 }

@@ -9,7 +9,7 @@ export class DemoController {
   ) {}
 
   async getUser(id: string, requestContext: RequestContext) {
-    const user = await this.getDemoUserUseCase.execute({ id, requestContext });
+    const user = await this.getDemoUserUseCase.execute({ id });
 
     this.logger.event("Demo user fetched", {
       requestId: requestContext.requestId,

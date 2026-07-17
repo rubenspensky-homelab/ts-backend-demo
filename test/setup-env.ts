@@ -1,0 +1,17 @@
+process.env.PORT = "3000";
+process.env.SERVICE_NAME = "base-microservice";
+process.env.SERVICE_DESCRIPTION = "Base microservice template for future backend services.";
+process.env.SERVICE_VERSION = "1.0.0";
+process.env.NODE_ENV = "test";
+process.env.METRICS_ENABLED = "true";
+process.env.TRACING_ENABLED = "false";
+process.env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT = "http://localhost:4318/v1/traces";
+process.env.AUTH_PROVIDER = "oidc";
+process.env.AUTH_ISSUER = "http://auth.home.lab/application/o/frontend-test/";
+process.env.AUTH_JWKS_URL = "http://auth.home.lab/application/o/frontend-test/jwks/";
+process.env.AUTH_AUDIENCE = "L9JCsgnMIb4CgTE3G4eSe8J5aWDTphvbpX9NM7ui";
+process.env.DOCS_OAUTH_CLIENT_ID = "L9JCsgnMIb4CgTE3G4eSe8J5aWDTphvbpX9NM7ui";
+process.env.DOCS_OAUTH_AUTHORIZATION_URL = "http://localhost:3000/docs/oauth/authorize";
+process.env.DOCS_OAUTH_UPSTREAM_AUTHORIZATION_URL = "http://auth.home.lab/application/o/authorize/";
+process.env.DOCS_OAUTH_TOKEN_URL = "http://auth.home.lab/application/o/token/";
+process.env.DOCS_OAUTH_REDIRECT_URI = "http://localhost:3000/docs";

@@ -15,6 +15,7 @@ describe("API documentation", () => {
     expect(res.body.openapi).toBe("3.1.0");
     expect(res.body.paths).toHaveProperty("/");
     expect(res.body.paths).toHaveProperty("/health");
+    expect(res.body.paths).toHaveProperty("/ready");
     expect(res.body.paths).toHaveProperty("/me");
     expect(res.body.paths["/me"].get.security).toEqual([{ oauth2: ["openid", "email", "profile"] }]);
     expect(res.body.components.securitySchemes.oauth2.flows.authorizationCode).toMatchObject({
@@ -35,15 +36,13 @@ describe("API documentation", () => {
   });
 
   it("normalizes Scalar OAuth authorize requests before redirecting to Authentik", async () => {
-    const res = await request(app)
-      .get("/docs/oauth/authorize")
-      .query({
-        Response_type: "code",
-        scope: "openid email profile",
-        state: "test-state",
-        code_challenge: "test-challenge",
-        code_challenge_method: "S256",
-      });
+    const res = await request(app).get("/docs/oauth/authorize").query({
+      Response_type: "code",
+      scope: "openid email profile",
+      state: "test-state",
+      code_challenge: "test-challenge",
+      code_challenge_method: "S256",
+    });
 
     expect(res.status).toBe(302);
 

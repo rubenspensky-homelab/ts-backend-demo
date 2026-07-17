@@ -69,6 +69,7 @@ src/
 - `GET /` landing page for browsers, with links to docs and health
 - `GET /` with `Accept: application/json` returns service metadata
 - `GET /health` health check
+- `GET /ready` readiness check
 - `GET /docs` Scalar API docs
 - `GET /openapi.json` OpenAPI document
 - `GET /metrics` Prometheus metrics when enabled
@@ -84,6 +85,12 @@ npm ci
 ```
 
 ## Development
+
+Start a watch-mode development server:
+
+```sh
+npm run dev
+```
 
 Build:
 
@@ -103,31 +110,53 @@ Run tests:
 npm test
 ```
 
+Run tests with coverage:
+
+```sh
+npm run coverage
+```
+
+Run linting and formatting checks:
+
+```sh
+npm run lint
+npm run format:check
+```
+
+Run the full verification suite:
+
+```sh
+npm run check
+```
+
 ## Environment variables
+
+All configuration values are explicit. Missing or empty required values fail application startup.
 
 ### Core
 
-- `PORT` default `3000`
-- `SERVICE_NAME` default `base-microservice`
-- `SERVICE_DESCRIPTION` default `Base microservice template for future backend services.`
-- `NODE_ENV` default `development`
+- `PORT`
+- `SERVICE_NAME`
+- `SERVICE_DESCRIPTION`
+- `SERVICE_VERSION`
+- `NODE_ENV`
 
 ### Observability
 
-- `METRICS_ENABLED` default enabled unless set to `false`
-- `TRACING_ENABLED` default enabled unless set to `false`
-- `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT` default `http://localhost:4318/v1/traces`
+- `METRICS_ENABLED` `true` or `false`
+- `TRACING_ENABLED` `true` or `false`
+- `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`
 
 ### Authentication
 
-- `AUTH_PROVIDER` `oidc` or `mock`, default `oidc`
-- `AUTH_ISSUER`
-- `AUTH_JWKS_URL`
-- `AUTH_AUDIENCE`
-- `MOCK_USER_ID`
-- `MOCK_USER_EMAIL`
-- `MOCK_USER_NAME`
-- `MOCK_USER_GROUPS`
+- `AUTH_PROVIDER` `oidc` or `mock`
+- `AUTH_ISSUER` required when `AUTH_PROVIDER=oidc`
+- `AUTH_JWKS_URL` required when `AUTH_PROVIDER=oidc`
+- `AUTH_AUDIENCE` required when `AUTH_PROVIDER=oidc`
+- `MOCK_USER_ID` required when `AUTH_PROVIDER=mock`
+- `MOCK_USER_EMAIL` required when `AUTH_PROVIDER=mock`
+- `MOCK_USER_NAME` required when `AUTH_PROVIDER=mock`
+- `MOCK_USER_GROUPS` required when `AUTH_PROVIDER=mock`
 
 ### Docs / OAuth
 
@@ -137,12 +166,15 @@ npm test
 - `DOCS_OAUTH_TOKEN_URL`
 - `DOCS_OAUTH_REDIRECT_URI`
 
+These docs OAuth values are required because `/docs` is always mounted.
+
 ## Documentation and health URLs
 
 - Landing page: `http://localhost:3000/`
 - Docs: `http://localhost:3000/docs`
 - OpenAPI: `http://localhost:3000/openapi.json`
 - Health: `http://localhost:3000/health`
+- Readiness: `http://localhost:3000/ready`
 
 ## What belongs in `shared`
 
@@ -184,6 +216,7 @@ The repository includes tests for:
 
 - landing page and root JSON response
 - health endpoint
+- readiness endpoint
 - auth behavior
 - docs exposure
 - metrics exposure
@@ -192,7 +225,8 @@ The repository includes tests for:
 - error handling
 - dependency injection wiring
 
+Coverage is enforced with Vitest V8 thresholds and reports to `coverage/`.
+
 ## Notes
 
-- No lint script is currently configured in `package.json`.
 - `src/index.ts` remains the process entrypoint so tracing starts before the Express app is imported.

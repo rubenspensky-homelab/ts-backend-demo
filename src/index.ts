@@ -3,7 +3,7 @@ import { logger } from "./shared/observability/logging/logger";
 import { shutdownTracing, startTracing } from "./shared/observability/tracing/tracing";
 
 async function main(): Promise<void> {
-  startTracing();
+  startTracing({ config, logger });
 
   const { app } = await import("./main.js");
   const server = app.listen(config.port, () => {
@@ -38,7 +38,8 @@ async function main(): Promise<void> {
 
         await shutdownTracing();
       } catch (shutdownError) {
-        const tracedError = shutdownError instanceof Error ? shutdownError : new Error("Unknown tracing shutdown error");
+        const tracedError =
+          shutdownError instanceof Error ? shutdownError : new Error("Unknown tracing shutdown error");
 
         logger.error("Tracing shutdown failed", {
           error: {

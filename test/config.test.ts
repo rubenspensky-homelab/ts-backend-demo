@@ -12,63 +12,40 @@ function source(values: Record<string, string | undefined>): ConfigSource {
   };
 }
 
+const validConfigValues = {
+  PORT: "8080",
+  SERVICE_NAME: "users-api",
+  SERVICE_DESCRIPTION: "Users service",
+  SERVICE_VERSION: "2.3.4",
+  NODE_ENV: "production",
+  METRICS_ENABLED: "true",
+  TRACING_ENABLED: "false",
+  OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: "http://localhost:4318/custom/traces",
+  AUTH_PROVIDER: "oidc",
+  AUTH_ISSUER: "http://auth.example.test/application/o/app/",
+  AUTH_JWKS_URL: "http://auth.example.test/application/o/app/jwks/",
+  AUTH_AUDIENCE: "api-client-id",
+  DOCS_OAUTH_CLIENT_ID: "docs-client-id",
+  DOCS_OAUTH_AUTHORIZATION_URL: "http://localhost:3000/docs/oauth/authorize",
+  DOCS_OAUTH_UPSTREAM_AUTHORIZATION_URL: "http://auth.example.test/application/o/authorize/",
+  DOCS_OAUTH_TOKEN_URL: "http://auth.example.test/application/o/token/",
+  DOCS_OAUTH_REDIRECT_URI: "http://localhost:3000/docs",
+};
+
 describe("loadConfig", () => {
-  it("uses safe defaults", () => {
-    expect(loadConfig(source({}))).toEqual({
-      port: 3000,
-      serviceName: "base-microservice",
-      serviceDescription: "Base microservice template for future backend services.",
-      version: "1.0.0",
-      environment: "development",
-      metricsEnabled: true,
-      tracingEnabled: true,
-      otlpTracesEndpoint: "http://localhost:4318/v1/traces",
-      auth: {
-        provider: "oidc",
-        issuer: "http://auth.home.lab/application/o/frontend-test/",
-        jwksUrl: "http://auth.home.lab/application/o/frontend-test/jwks/",
-        audience: "L9JCsgnMIb4CgTE3G4eSe8J5aWDTphvbpX9NM7ui",
-      },
-      docs: {
-        oauthClientId: "L9JCsgnMIb4CgTE3G4eSe8J5aWDTphvbpX9NM7ui",
-        oauthAuthorizationUrl: "http://localhost:3000/docs/oauth/authorize",
-        oauthUpstreamAuthorizationUrl: "http://auth.home.lab/application/o/authorize/",
-        oauthTokenUrl: "http://auth.home.lab/application/o/token/",
-        oauthRedirectUri: "http://localhost:3000/docs",
-      },
-    });
+  it("rejects missing required values", () => {
+    expect(() => loadConfig(source({}))).toThrow(ConfigError);
+    expect(() => loadConfig(source({}))).toThrow("NODE_ENV is required");
   });
 
   it("reads values from the provided source", () => {
-    expect(
-      loadConfig(
-        source({
-          PORT: "8080",
-          SERVICE_NAME: "users-api",
-          SERVICE_DESCRIPTION: "Users service",
-          npm_package_version: "2.3.4",
-          NODE_ENV: "production",
-          METRICS_ENABLED: "false",
-          TRACING_ENABLED: "false",
-          OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: "http://localhost:4318/custom/traces",
-          AUTH_PROVIDER: "oidc",
-          AUTH_ISSUER: "http://auth.example.test/application/o/app/",
-          AUTH_JWKS_URL: "http://auth.example.test/application/o/app/jwks/",
-          AUTH_AUDIENCE: "api-client-id",
-          DOCS_OAUTH_CLIENT_ID: "docs-client-id",
-          DOCS_OAUTH_AUTHORIZATION_URL: "http://localhost:3000/docs/oauth/authorize",
-          DOCS_OAUTH_UPSTREAM_AUTHORIZATION_URL: "http://auth.example.test/application/o/authorize/",
-          DOCS_OAUTH_TOKEN_URL: "http://auth.example.test/application/o/token/",
-          DOCS_OAUTH_REDIRECT_URI: "http://localhost:3000/docs",
-        }),
-      ),
-    ).toEqual({
+    expect(loadConfig(source(validConfigValues))).toEqual({
       port: 8080,
       serviceName: "users-api",
       serviceDescription: "Users service",
       version: "2.3.4",
       environment: "production",
-      metricsEnabled: false,
+      metricsEnabled: true,
       tracingEnabled: false,
       otlpTracesEndpoint: "http://localhost:4318/custom/traces",
       auth: {
@@ -91,6 +68,8 @@ describe("loadConfig", () => {
     expect(
       loadConfig(
         source({
+          ...validConfigValues,
+          NODE_ENV: "development",
           AUTH_PROVIDER: "mock",
           MOCK_USER_ID: "dev-user-1",
           MOCK_USER_EMAIL: "dev@example.com",
@@ -110,15 +89,17 @@ describe("loadConfig", () => {
   });
 
   it("rejects unknown auth providers", () => {
-    expect(() => loadConfig(source({ AUTH_PROVIDER: "local" }))).toThrow(AuthConfigError);
-    expect(() => loadConfig(source({ AUTH_PROVIDER: "local" }))).toThrow("AUTH_PROVIDER must be one of: oidc, mock");
+    expect(() => loadConfig(source({ ...validConfigValues, AUTH_PROVIDER: "local" }))).toThrow(AuthConfigError);
+    expect(() => loadConfig(source({ ...validConfigValues, AUTH_PROVIDER: "local" }))).toThrow(
+      "AUTH_PROVIDER must be one of: oidc, mock",
+    );
   });
 
   it("rejects mock auth in production", () => {
     expect(() =>
       loadConfig(
         source({
-          NODE_ENV: "production",
+          ...validConfigValues,
           AUTH_PROVIDER: "mock",
           MOCK_USER_ID: "dev-user-1",
           MOCK_USER_EMAIL: "dev@example.com",
@@ -129,15 +110,22 @@ describe("loadConfig", () => {
     ).toThrow("AUTH_PROVIDER=mock is not allowed when NODE_ENV=production");
   });
 
-  it("enables metrics unless explicitly disabled", () => {
-    expect(loadConfig(source({ METRICS_ENABLED: "true" })).metricsEnabled).toBe(true);
-    expect(loadConfig(source({ METRICS_ENABLED: "" })).metricsEnabled).toBe(true);
-    expect(loadConfig(source({ METRICS_ENABLED: "FALSE" })).metricsEnabled).toBe(false);
+  it("requires explicit boolean values", () => {
+    expect(loadConfig(source({ ...validConfigValues, METRICS_ENABLED: "true" })).metricsEnabled).toBe(true);
+    expect(loadConfig(source({ ...validConfigValues, METRICS_ENABLED: "false" })).metricsEnabled).toBe(false);
+    expect(() => loadConfig(source({ ...validConfigValues, METRICS_ENABLED: "" }))).toThrow(
+      "METRICS_ENABLED is required",
+    );
+    expect(() => loadConfig(source({ ...validConfigValues, METRICS_ENABLED: "yes" }))).toThrow(
+      "METRICS_ENABLED must be either true or false",
+    );
   });
 
   it("rejects invalid ports", () => {
-    expect(() => loadConfig(source({ PORT: "abc" }))).toThrow(ConfigError);
-    expect(() => loadConfig(source({ PORT: "70000" }))).toThrow("PORT must be an integer between 1 and 65535");
+    expect(() => loadConfig(source({ ...validConfigValues, PORT: "abc" }))).toThrow(ConfigError);
+    expect(() => loadConfig(source({ ...validConfigValues, PORT: "70000" }))).toThrow(
+      "PORT must be an integer between 1 and 65535",
+    );
   });
 });
 

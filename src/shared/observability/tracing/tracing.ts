@@ -5,13 +5,29 @@ import { ExpressInstrumentation } from "@opentelemetry/instrumentation-express";
 import { HttpInstrumentation } from "@opentelemetry/instrumentation-http";
 import { resourceFromAttributes } from "@opentelemetry/resources";
 import { NodeSDK } from "@opentelemetry/sdk-node";
-import { config } from "../../config/service-config";
-import { logger } from "../logging/logger";
+import type { Logger } from "../logging/types";
+
+export type TracingConfig = {
+  tracingEnabled: boolean;
+  serviceName: string;
+  version: string;
+  environment: string;
+  otlpTracesEndpoint: string;
+};
+
+export type StartTracingOptions = {
+  config: TracingConfig;
+  logger: Logger;
+};
 
 let sdk: NodeSDK | undefined;
 let diagnosticsRegistered = false;
+let activeLogger: Logger | undefined;
 
-export function startTracing(): void {
+export function startTracing(options: StartTracingOptions): void {
+  const { config, logger } = options;
+  activeLogger = logger;
+
   if (!config.tracingEnabled) {
     logger.info("OpenTelemetry tracing disabled", {
       event: {
@@ -28,7 +44,7 @@ export function startTracing(): void {
   }
 
   try {
-    registerOpenTelemetryDiagnostics();
+    registerOpenTelemetryDiagnostics(logger);
 
     sdk = new NodeSDK({
       autoDetectResources: true,
@@ -76,7 +92,7 @@ export async function shutdownTracing(): Promise<void> {
   await sdk.shutdown();
   sdk = undefined;
 
-  logger.info("OpenTelemetry tracing shutdown completed", {
+  activeLogger?.info("OpenTelemetry tracing shutdown completed", {
     event: {
       event: "opentelemetry.tracing.shutdown",
       entity: "tracing",
@@ -84,7 +100,7 @@ export async function shutdownTracing(): Promise<void> {
   });
 }
 
-function registerOpenTelemetryDiagnostics(): void {
+function registerOpenTelemetryDiagnostics(logger: Logger): void {
   if (diagnosticsRegistered) {
     return;
   }

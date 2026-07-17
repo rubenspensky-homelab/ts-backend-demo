@@ -1,8 +1,13 @@
 import type { RequestHandler } from "express";
-import type { AppConfig } from "../config/types";
+import type { DocsConfig } from "../config/types";
 import type { OpenApiDocument } from "./openapi";
 
-export function createScalarDocsHandler(config: AppConfig, openApiDocument: OpenApiDocument): RequestHandler {
+type ScalarDocsConfig = {
+  serviceName: string;
+  docs: DocsConfig;
+};
+
+export function createScalarDocsHandler(config: ScalarDocsConfig, openApiDocument: OpenApiDocument): RequestHandler {
   let scalarHandler: RequestHandler | undefined;
 
   return async (req, res, next) => {
