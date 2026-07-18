@@ -17,6 +17,10 @@ export const mockAuthAppConfig: AppConfig = {
   metricsEnabled: true,
   tracingEnabled: false,
   otlpTracesEndpoint: "http://localhost:4318/v1/traces",
+  cors: {
+    enabled: true,
+    allowedOrigins: ["http://localhost:5173", "http://localhost:3000"],
+  },
   auth: {
     provider: "mock",
     user: {

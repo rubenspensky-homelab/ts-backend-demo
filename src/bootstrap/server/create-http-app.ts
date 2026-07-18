@@ -1,3 +1,4 @@
+import cors from "cors";
 import express, { type Application } from "express";
 import type { AuthenticationProvider } from "../../shared/auth/authentication-provider";
 import { requestContextMiddleware } from "../../shared/auth/request-context/request-context.middleware";
@@ -32,6 +33,17 @@ type CreateHttpAppOptions = {
 
 export function createHttpApp(options: CreateHttpAppOptions): Application {
   const app = express();
+
+  if (options.config.cors.enabled) {
+    app.use(
+      cors({
+        origin: options.config.cors.allowedOrigins,
+        methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        allowedHeaders: ["Authorization", "Content-Type"],
+        credentials: false,
+      }),
+    );
+  }
 
   app.use(express.json());
 

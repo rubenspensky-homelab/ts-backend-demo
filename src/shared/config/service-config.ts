@@ -17,6 +17,10 @@ export function loadConfig(source: ConfigSource): AppConfig {
     metricsEnabled: readBoolean(source, "METRICS_ENABLED"),
     tracingEnabled: readBoolean(source, "TRACING_ENABLED"),
     otlpTracesEndpoint: readRequiredString(source, "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT"),
+    cors: {
+      enabled: readBoolean(source, "CORS_ENABLED"),
+      allowedOrigins: readCorsAllowedOrigins(source),
+    },
     auth: loadAuthConfig(source, environment),
     docs: {
       publicBaseUrls: readPublicBaseUrls(source),
@@ -27,6 +31,18 @@ export function loadConfig(source: ConfigSource): AppConfig {
       oauthRedirectUri: readRequiredString(source, "DOCS_OAUTH_REDIRECT_URI"),
     },
   };
+}
+
+function readCorsAllowedOrigins(source: ConfigSource): string[] {
+  return readRequiredStringList(source, "CORS_ALLOWED_ORIGINS").map((origin) => {
+    try {
+      new URL(origin);
+    } catch {
+      throw new ConfigError(`CORS_ALLOWED_ORIGINS contains an invalid origin: ${origin}`);
+    }
+
+    return origin;
+  });
 }
 
 function readPublicBaseUrls(source: ConfigSource): AppConfig["docs"]["publicBaseUrls"] {

@@ -19,6 +19,8 @@ const validConfigValues = {
   SERVICE_VERSION: "2.3.4",
   NODE_ENV: "production",
   PUBLIC_BASE_URLS: "http://users.internal.test|Internal,https://users.example.test|External",
+  CORS_ENABLED: "true",
+  CORS_ALLOWED_ORIGINS: "http://localhost:5173,https://frontend.example.test",
   METRICS_ENABLED: "true",
   TRACING_ENABLED: "false",
   OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: "http://localhost:4318/custom/traces",
@@ -49,6 +51,10 @@ describe("loadConfig", () => {
       metricsEnabled: true,
       tracingEnabled: false,
       otlpTracesEndpoint: "http://localhost:4318/custom/traces",
+      cors: {
+        enabled: true,
+        allowedOrigins: ["http://localhost:5173", "https://frontend.example.test"],
+      },
       auth: {
         provider: "oidc",
         issuer: "http://auth.example.test/application/o/app/",
@@ -137,6 +143,13 @@ describe("loadConfig", () => {
     expect(() => loadConfig(source({ ...validConfigValues, PUBLIC_BASE_URLS: "not-a-url" }))).toThrow(ConfigError);
     expect(() => loadConfig(source({ ...validConfigValues, PUBLIC_BASE_URLS: "not-a-url" }))).toThrow(
       "PUBLIC_BASE_URLS contains an invalid URL: not-a-url",
+    );
+  });
+
+  it("rejects invalid CORS origins", () => {
+    expect(() => loadConfig(source({ ...validConfigValues, CORS_ALLOWED_ORIGINS: "not-a-url" }))).toThrow(ConfigError);
+    expect(() => loadConfig(source({ ...validConfigValues, CORS_ALLOWED_ORIGINS: "not-a-url" }))).toThrow(
+      "CORS_ALLOWED_ORIGINS contains an invalid origin: not-a-url",
     );
   });
 });

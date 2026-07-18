@@ -12,6 +12,11 @@ export type DocsConfig = {
   oauthRedirectUri: string;
 };
 
+export type CorsConfig = {
+  enabled: boolean;
+  allowedOrigins: string[];
+};
+
 export type AppConfig = {
   port: number;
   serviceName: string;
@@ -21,6 +26,7 @@ export type AppConfig = {
   metricsEnabled: boolean;
   tracingEnabled: boolean;
   otlpTracesEndpoint: string;
+  cors: CorsConfig;
   auth: AuthConfig;
   docs: DocsConfig;
 };
