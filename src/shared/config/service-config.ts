@@ -36,12 +36,10 @@ export function loadConfig(source: ConfigSource): AppConfig {
 function readCorsAllowedOrigins(source: ConfigSource): string[] {
   return readRequiredStringList(source, "CORS_ALLOWED_ORIGINS").map((origin) => {
     try {
-      new URL(origin);
+      return new URL(origin).origin;
     } catch {
       throw new ConfigError(`CORS_ALLOWED_ORIGINS contains an invalid origin: ${origin}`);
     }
-
-    return origin;
   });
 }
 

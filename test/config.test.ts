@@ -20,7 +20,7 @@ const validConfigValues = {
   NODE_ENV: "production",
   PUBLIC_BASE_URLS: "http://users.internal.test|Internal,https://users.example.test|External",
   CORS_ENABLED: "true",
-  CORS_ALLOWED_ORIGINS: "http://localhost:5173,https://frontend.example.test",
+  CORS_ALLOWED_ORIGINS: "http://localhost:5173/,https://frontend.example.test/path",
   METRICS_ENABLED: "true",
   TRACING_ENABLED: "false",
   OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: "http://localhost:4318/custom/traces",

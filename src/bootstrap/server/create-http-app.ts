@@ -39,7 +39,8 @@ export function createHttpApp(options: CreateHttpAppOptions): Application {
       cors({
         origin: options.config.cors.allowedOrigins,
         methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-        allowedHeaders: ["Authorization", "Content-Type"],
+        allowedHeaders: ["Authorization", "Content-Type", "X-Request-Id"],
+        exposedHeaders: ["X-Request-Id"],
         credentials: false,
       }),
     );
