@@ -3,6 +3,7 @@ process.env.SERVICE_NAME = "base-microservice";
 process.env.SERVICE_DESCRIPTION = "Base microservice template for future backend services.";
 process.env.SERVICE_VERSION = "1.0.0";
 process.env.NODE_ENV = "test";
+process.env.PUBLIC_BASE_URLS = "http://localhost:3000|Local";
 process.env.METRICS_ENABLED = "true";
 process.env.TRACING_ENABLED = "false";
 process.env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT = "http://localhost:4318/v1/traces";

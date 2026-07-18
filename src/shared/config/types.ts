@@ -1,6 +1,10 @@
 import type { AuthConfig } from "../auth/types/auth.types";
 
 export type DocsConfig = {
+  publicBaseUrls: Array<{
+    url: string;
+    description: string;
+  }>;
   oauthClientId: string;
   oauthAuthorizationUrl: string;
   oauthUpstreamAuthorizationUrl: string;

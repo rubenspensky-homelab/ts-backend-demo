@@ -52,7 +52,7 @@ export function createHttpApp(options: CreateHttpAppOptions): Application {
   }
 
   app.use(createAuthRoutes(options.controllers.auth, options.authenticationProvider));
-  app.use(createDemoRoutes(options.controllers.demo));
+  app.use(createDemoRoutes(options.controllers.demo, options.authenticationProvider));
   app.use(createErrorHandler(options.logger));
 
   return app;

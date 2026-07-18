@@ -19,7 +19,7 @@ export function createOpenApiDocument(config: AppConfig): OpenApiDocument {
               name: "id",
               in: "path",
               required: true,
-              schema: { type: "string" },
+              schema: { type: "string", minLength: 1, maxLength: 64, pattern: "^[A-Za-z0-9_-]+$" },
             },
           ],
           responses: {
@@ -31,6 +31,35 @@ export function createOpenApiDocument(config: AppConfig): OpenApiDocument {
                 },
               },
             },
+            "400": { $ref: "#/components/responses/BadRequest" },
+          },
+        },
+      },
+      "/demo/protected/users/{id}": {
+        get: {
+          tags: ["Demo"],
+          summary: "Get a protected demo user",
+          operationId: "getProtectedDemoUser",
+          security: [{ oauth2: ["openid", "email", "profile"] }],
+          parameters: [
+            {
+              name: "id",
+              in: "path",
+              required: true,
+              schema: { type: "string", minLength: 1, maxLength: 64, pattern: "^[A-Za-z0-9_-]+$" },
+            },
+          ],
+          responses: {
+            "200": {
+              description: "Demo user",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/DemoUserResponse" },
+                },
+              },
+            },
+            "400": { $ref: "#/components/responses/BadRequest" },
+            "401": { $ref: "#/components/responses/Unauthorized" },
           },
         },
       },
@@ -54,8 +83,38 @@ export function createOpenApiDocument(config: AppConfig): OpenApiDocument {
     },
     components: {
       ...document.components,
+      responses: {
+        ...document.components.responses,
+        BadRequest: {
+          description: "Request validation failed",
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/BadRequestResponse" },
+            },
+          },
+        },
+      },
       schemas: {
         ...document.components.schemas,
+        BadRequestResponse: {
+          type: "object",
+          required: ["error", "message", "issues"],
+          properties: {
+            error: { type: "string", const: "Bad Request" },
+            message: { type: "string" },
+            issues: {
+              type: "array",
+              items: {
+                type: "object",
+                required: ["path", "message"],
+                properties: {
+                  path: { type: "string" },
+                  message: { type: "string" },
+                },
+              },
+            },
+          },
+        },
         DemoUserResponse: {
           type: "object",
           required: ["user"],

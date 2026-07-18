@@ -1,7 +1,6 @@
 import type { DocsConfig } from "../config/types";
 
 export type BaseOpenApiConfig = {
-  port: number;
   serviceName: string;
   serviceDescription: string;
   version: string;
@@ -39,12 +38,7 @@ export function createBaseOpenApiDocument(config: BaseOpenApiConfig): OpenApiDoc
       version: config.version,
       description: config.serviceDescription,
     },
-    servers: [
-      {
-        url: `http://localhost:${config.port}`,
-        description: "Local development server",
-      },
-    ],
+    servers: config.docs.publicBaseUrls,
     tags: [
       { name: "System", description: "Health and operational endpoints" },
       { name: "Authentication", description: "Protected authentication test endpoints" },

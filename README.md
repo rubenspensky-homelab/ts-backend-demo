@@ -76,6 +76,7 @@ src/
 - `GET /me` authenticated user
 - `GET /auth/test` auth verification
 - `GET /demo/users/:id` demo use case
+- `GET /demo/protected/users/:id` authenticated demo use case
 - `GET /demo/error` demo error handling
 
 ## Installation
@@ -140,6 +141,7 @@ All configuration values are explicit. Missing or empty required values fail app
 - `SERVICE_DESCRIPTION`
 - `SERVICE_VERSION`
 - `NODE_ENV`
+- `PUBLIC_BASE_URLS` comma-separated public service URLs for OpenAPI/Scalar servers. Entries may be `url` or `url|description`.
 
 ### Observability
 
@@ -167,6 +169,12 @@ All configuration values are explicit. Missing or empty required values fail app
 - `DOCS_OAUTH_REDIRECT_URI`
 
 These docs OAuth values are required because `/docs` is always mounted.
+
+Example with internal and external Scalar server targets:
+
+```env
+PUBLIC_BASE_URLS=http://ts-backend-demo.home.lab:3000|Internal,https://api.example.com|External
+```
 
 ## Documentation and health URLs
 

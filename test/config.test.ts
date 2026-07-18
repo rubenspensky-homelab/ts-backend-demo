@@ -18,6 +18,7 @@ const validConfigValues = {
   SERVICE_DESCRIPTION: "Users service",
   SERVICE_VERSION: "2.3.4",
   NODE_ENV: "production",
+  PUBLIC_BASE_URLS: "http://users.internal.test|Internal,https://users.example.test|External",
   METRICS_ENABLED: "true",
   TRACING_ENABLED: "false",
   OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: "http://localhost:4318/custom/traces",
@@ -55,6 +56,10 @@ describe("loadConfig", () => {
         audience: "api-client-id",
       },
       docs: {
+        publicBaseUrls: [
+          { url: "http://users.internal.test", description: "Internal" },
+          { url: "https://users.example.test", description: "External" },
+        ],
         oauthClientId: "docs-client-id",
         oauthAuthorizationUrl: "http://localhost:3000/docs/oauth/authorize",
         oauthUpstreamAuthorizationUrl: "http://auth.example.test/application/o/authorize/",
@@ -125,6 +130,13 @@ describe("loadConfig", () => {
     expect(() => loadConfig(source({ ...validConfigValues, PORT: "abc" }))).toThrow(ConfigError);
     expect(() => loadConfig(source({ ...validConfigValues, PORT: "70000" }))).toThrow(
       "PORT must be an integer between 1 and 65535",
+    );
+  });
+
+  it("rejects invalid public base URLs", () => {
+    expect(() => loadConfig(source({ ...validConfigValues, PUBLIC_BASE_URLS: "not-a-url" }))).toThrow(ConfigError);
+    expect(() => loadConfig(source({ ...validConfigValues, PUBLIC_BASE_URLS: "not-a-url" }))).toThrow(
+      "PUBLIC_BASE_URLS contains an invalid URL: not-a-url",
     );
   });
 });

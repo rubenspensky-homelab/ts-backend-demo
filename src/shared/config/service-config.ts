@@ -1,7 +1,7 @@
 import type { ConfigSource } from "./types";
 import { EnvConfigSource } from "./env/config-source";
 import { readBoolean, readPort, readRequiredString, readRequiredStringList } from "./readers";
-import { AuthConfigError } from "./validation/config.errors";
+import { AuthConfigError, ConfigError } from "./validation/config.errors";
 import type { AppConfig } from "./types";
 import type { AuthConfig, AuthProviderName } from "../auth/types/auth.types";
 
@@ -19,6 +19,7 @@ export function loadConfig(source: ConfigSource): AppConfig {
     otlpTracesEndpoint: readRequiredString(source, "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT"),
     auth: loadAuthConfig(source, environment),
     docs: {
+      publicBaseUrls: readPublicBaseUrls(source),
       oauthClientId: readRequiredString(source, "DOCS_OAUTH_CLIENT_ID"),
       oauthAuthorizationUrl: readRequiredString(source, "DOCS_OAUTH_AUTHORIZATION_URL"),
       oauthUpstreamAuthorizationUrl: readRequiredString(source, "DOCS_OAUTH_UPSTREAM_AUTHORIZATION_URL"),
@@ -26,6 +27,22 @@ export function loadConfig(source: ConfigSource): AppConfig {
       oauthRedirectUri: readRequiredString(source, "DOCS_OAUTH_REDIRECT_URI"),
     },
   };
+}
+
+function readPublicBaseUrls(source: ConfigSource): AppConfig["docs"]["publicBaseUrls"] {
+  return readRequiredStringList(source, "PUBLIC_BASE_URLS").map((value, index) => {
+    const [rawUrl, rawDescription] = value.split("|", 2);
+    const url = rawUrl.trim();
+    const description = rawDescription?.trim() || `Service URL ${index + 1}`;
+
+    try {
+      new URL(url);
+    } catch {
+      throw new ConfigError(`PUBLIC_BASE_URLS contains an invalid URL: ${url}`);
+    }
+
+    return { url, description };
+  });
 }
 
 function loadAuthConfig(source: ConfigSource, environment: string): AuthConfig {

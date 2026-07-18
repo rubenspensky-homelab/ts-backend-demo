@@ -13,11 +13,22 @@ describe("API documentation", () => {
 
     expect(res.status).toBe(200);
     expect(res.body.openapi).toBe("3.1.0");
+    expect(res.body.servers).toEqual([{ url: "http://localhost:3000", description: "Local" }]);
     expect(res.body.paths).toHaveProperty("/");
     expect(res.body.paths).toHaveProperty("/health");
     expect(res.body.paths).toHaveProperty("/ready");
     expect(res.body.paths).toHaveProperty("/me");
+    expect(res.body.paths).toHaveProperty("/demo/users/{id}");
+    expect(res.body.paths).toHaveProperty("/demo/protected/users/{id}");
     expect(res.body.paths["/me"].get.security).toEqual([{ oauth2: ["openid", "email", "profile"] }]);
+    expect(res.body.paths["/demo/users/{id}"].get.security).toBeUndefined();
+    expect(res.body.paths["/demo/users/{id}"].get.responses).toHaveProperty("400");
+    expect(res.body.paths["/demo/users/{id}"].get.responses).not.toHaveProperty("401");
+    expect(res.body.paths["/demo/protected/users/{id}"].get.security).toEqual([
+      { oauth2: ["openid", "email", "profile"] },
+    ]);
+    expect(res.body.paths["/demo/protected/users/{id}"].get.responses).toHaveProperty("400");
+    expect(res.body.paths["/demo/protected/users/{id}"].get.responses).toHaveProperty("401");
     expect(res.body.components.securitySchemes.oauth2.flows.authorizationCode).toMatchObject({
       authorizationUrl: "http://localhost:3000/docs/oauth/authorize",
       tokenUrl: "http://auth.home.lab/application/o/token/",
