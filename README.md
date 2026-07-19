@@ -142,6 +142,7 @@ All configuration values are explicit. Missing or empty required values fail app
 - `SERVICE_VERSION`
 - `NODE_ENV`
 - `PUBLIC_BASE_URLS` comma-separated public service URLs for OpenAPI/Scalar servers. Entries may be `url` or `url|description`.
+- `GRAFANA_DASHBOARD_URL` public Grafana dashboard embedded in the landing page.
 
 ### Observability
 
@@ -179,6 +180,7 @@ PUBLIC_BASE_URLS=http://ts-backend-demo.home.lab:3000|Internal,https://api.examp
 ## Documentation and health URLs
 
 - Landing page: `http://localhost:3000/`
+- Grafana dashboard: configured through `GRAFANA_DASHBOARD_URL` and embedded on the landing page
 - Docs: `http://localhost:3000/docs`
 - OpenAPI: `http://localhost:3000/openapi.json`
 - Health: `http://localhost:3000/health`

@@ -19,6 +19,7 @@ const validConfigValues = {
   SERVICE_VERSION: "2.3.4",
   NODE_ENV: "production",
   PUBLIC_BASE_URLS: "http://users.internal.test|Internal,https://users.example.test|External",
+  GRAFANA_DASHBOARD_URL: "https://grafana.example.test/public-dashboards/service-overview",
   CORS_ENABLED: "true",
   CORS_ALLOWED_ORIGINS: "http://localhost:5173/,https://frontend.example.test/path",
   METRICS_ENABLED: "true",
@@ -48,6 +49,7 @@ describe("loadConfig", () => {
       serviceDescription: "Users service",
       version: "2.3.4",
       environment: "production",
+      grafanaDashboardUrl: "https://grafana.example.test/public-dashboards/service-overview",
       metricsEnabled: true,
       tracingEnabled: false,
       otlpTracesEndpoint: "http://localhost:4318/custom/traces",
@@ -143,6 +145,13 @@ describe("loadConfig", () => {
     expect(() => loadConfig(source({ ...validConfigValues, PUBLIC_BASE_URLS: "not-a-url" }))).toThrow(ConfigError);
     expect(() => loadConfig(source({ ...validConfigValues, PUBLIC_BASE_URLS: "not-a-url" }))).toThrow(
       "PUBLIC_BASE_URLS contains an invalid URL: not-a-url",
+    );
+  });
+
+  it("rejects invalid Grafana dashboard URLs", () => {
+    expect(() => loadConfig(source({ ...validConfigValues, GRAFANA_DASHBOARD_URL: "not-a-url" }))).toThrow(ConfigError);
+    expect(() => loadConfig(source({ ...validConfigValues, GRAFANA_DASHBOARD_URL: "not-a-url" }))).toThrow(
+      "GRAFANA_DASHBOARD_URL contains an invalid URL: not-a-url",
     );
   });
 

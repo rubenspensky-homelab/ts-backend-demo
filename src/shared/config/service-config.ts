@@ -14,6 +14,7 @@ export function loadConfig(source: ConfigSource): AppConfig {
     serviceDescription: readRequiredString(source, "SERVICE_DESCRIPTION"),
     version: readRequiredString(source, "SERVICE_VERSION"),
     environment,
+    grafanaDashboardUrl: readGrafanaDashboardUrl(source),
     metricsEnabled: readBoolean(source, "METRICS_ENABLED"),
     tracingEnabled: readBoolean(source, "TRACING_ENABLED"),
     otlpTracesEndpoint: readRequiredString(source, "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT"),
@@ -31,6 +32,18 @@ export function loadConfig(source: ConfigSource): AppConfig {
       oauthRedirectUri: readRequiredString(source, "DOCS_OAUTH_REDIRECT_URI"),
     },
   };
+}
+
+function readGrafanaDashboardUrl(source: ConfigSource): string {
+  const url = readRequiredString(source, "GRAFANA_DASHBOARD_URL");
+
+  try {
+    new URL(url);
+  } catch {
+    throw new ConfigError(`GRAFANA_DASHBOARD_URL contains an invalid URL: ${url}`);
+  }
+
+  return url;
 }
 
 function readCorsAllowedOrigins(source: ConfigSource): string[] {

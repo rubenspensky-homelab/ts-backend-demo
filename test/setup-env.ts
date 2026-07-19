@@ -4,6 +4,8 @@ process.env.SERVICE_DESCRIPTION = "Base microservice template for future backend
 process.env.SERVICE_VERSION = "1.0.0";
 process.env.NODE_ENV = "test";
 process.env.PUBLIC_BASE_URLS = "http://localhost:3000|Local";
+process.env.GRAFANA_DASHBOARD_URL =
+  "https://grafana.rubenspensky.com/public-dashboards/670e197c902a4c179d9e2a92812b8f07";
 process.env.CORS_ENABLED = "true";
 process.env.CORS_ALLOWED_ORIGINS = "http://localhost:5173,http://localhost:3000";
 process.env.METRICS_ENABLED = "true";

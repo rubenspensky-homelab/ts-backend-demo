@@ -143,6 +143,27 @@ export class SystemController {
         background: #050505;
         padding: 20px;
       }
+      .dashboard {
+        border-top: 1px solid #737373;
+        background: #050505;
+        padding: 20px;
+      }
+      .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: center;
+        margin-bottom: 16px;
+      }
+      .dashboard-header h2 {
+        margin: 0;
+      }
+      .dashboard-frame {
+        width: 100%;
+        height: min(760px, 72vh);
+        border: 1px solid #737373;
+        background: #000;
+      }
       h2 {
         margin: 0 0 18px;
         color: #fff;
@@ -206,8 +227,13 @@ export class SystemController {
           border-top: 1px solid #737373;
         }
         .topbar,
-        .footer {
+        .footer,
+        .dashboard-header {
           flex-direction: column;
+          align-items: flex-start;
+        }
+        .dashboard-frame {
+          height: 560px;
         }
       }
     </style>
@@ -274,6 +300,14 @@ tracing     ${String(this.config.tracingEnabled)}</pre>
               <a class="link-row" href="https://scalar.com" rel="noreferrer"><span>Scalar</span><span>api docs</span></a>
             </div>
           </article>
+        </section>
+
+        <section class="dashboard" aria-label="Grafana dashboard">
+          <div class="dashboard-header">
+            <h2>Grafana Dashboard</h2>
+            <a class="button" href="${this.config.grafanaDashboardUrl}" rel="noreferrer">Open Grafana</a>
+          </div>
+          <iframe class="dashboard-frame" src="${this.config.grafanaDashboardUrl}" title="Grafana public dashboard" loading="lazy"></iframe>
         </section>
 
         <footer class="footer">

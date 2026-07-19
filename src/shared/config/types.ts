@@ -23,6 +23,7 @@ export type AppConfig = {
   serviceDescription: string;
   version: string;
   environment: string;
+  grafanaDashboardUrl: string;
   metricsEnabled: boolean;
   tracingEnabled: boolean;
   otlpTracesEndpoint: string;

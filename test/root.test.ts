@@ -16,6 +16,8 @@ describe("GET /", () => {
     expect(res.text).toContain("base-microservice");
     expect(res.text).toContain("View API docs");
     expect(res.text).toContain("/docs");
+    expect(res.text).toContain("Grafana Dashboard");
+    expect(res.text).toContain("https://grafana.rubenspensky.com/public-dashboards/670e197c902a4c179d9e2a92812b8f07");
   });
 
   it("returns service metadata when json is requested", async () => {
